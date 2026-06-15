@@ -143,18 +143,19 @@ with right_workspace:
         
         if "Critical" in block_row["Severity"]:
             badge_html = '<span class="badge-critical">🛑 EMERGENCY LEVEL Threat</span>'
-            directive_text = f"🚨 **CRITICAL INTERVENTION MANDATE:** Sector **{selected_sector}** shows a massive **{risk_val}%** risk probability. Open primary distributary sluice lines immediately to mitigate biomass failure risk."
+            directive_text = f"🚨 **CRITICAL INTERVENTION MANDATE:** Sector **{selected_sector}** shows a massive **{risk_val}%** risk probability. Open primary distributary sluice lines immediately."
         elif "Warning" in block_row["Severity"]:
             badge_html = '<span class="badge-warning">⚠️ ELEVATED STRESS RISK</span>'
-            directive_text = f"⚡ **PREVENTATIVE LOGISTICS DEPLOYMENT:** Moisture levels falling inside **{selected_sector}**. Schedule automated gate system rotation loops over the coming 24-hour cycle."
+            directive_text = f"⚡ **PREVENTATIVE LOGISTICS DEPLOYMENT:** Moisture levels falling inside **{selected_sector}**. Schedule automated gate loops."
         else:
             badge_html = '<span class="badge-stable">✅ ZONE STABLE</span>'
-            directive_text = f"🌱 **EQUILIBRIUM MAINTAINED:** Crop metrics for **{selected_sector}** remain safely inside target operational ranges."
+            directive_text = f"🌱 **EQUILIBRIUM MAINTAINED:** Crop metrics for **{selected_sector}** remain stable."
 
         st.markdown(f'<div class="premium-card"><h4>Plot ID: {selected_sector}</h4><p>🌾 Crop Category: {block_row["Crop Class"]}</p><p>🔥 Climate Threat Index: {risk_val}%</p>{badge_html}</div>', unsafe_allow_html=True)
         st.info(directive_text)
         
-        comprehensive_report = f"🛡️ KRISHITWIN OS CENTRAL COMMAND LOGISTICS BRIEF\nTarget Region: {selected_state} - {selected_city}\nSector Unit: {selected_sector}\nDeficit Parameter: {deficit} mm\nConsolidated Risk Matrix: {risk_val}%\nDirective Order: {directive_text}"
+        # Fixed String Assembly to avoid javascript literal breaking
+        comprehensive_report = "🛡️ KRISHITWIN OS CENTRAL COMMAND LOGISTICS BRIEF\\n" + f"Target Region: {selected_state} - {selected_city}\\nSector Unit: {selected_sector}\\nDeficit Parameter: {deficit} mm\\nConsolidated Risk Matrix: {risk_val}%\\nDirective Order: {directive_text}"
         st.download_button(label="📥 Export Municipal Advisory Command Brief", data=comprehensive_report, file_name=f"KrishiTwin_Advisory_{selected_sector.replace(' ', '_')}.txt", mime="text/plain")
 `
           }
