@@ -39,6 +39,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Expanded coordinate dataset map
 state_city_map = {
     "Maharashtra": {"cities": {"Nashik Grape/Onion Belt": {"lat": 19.9975, "lon": 73.7898}, "Chhatrapati Sambhaji Nagar Sector": {"lat": 19.8762, "lon": 75.3433}, "Pune Sugarcane Basin": {"lat": 18.5204, "lon": 73.8567}}},
     "Gujarat": {"cities": {"Surat Cotton Basin": {"lat": 21.1702, "lon": 72.8311}, "Anand Dairy/Agri Command": {"lat": 22.5645, "lon": 72.9289}, "Rajkot Groundnut Sector": {"lat": 22.3039, "lon": 70.8022}}}
@@ -51,7 +52,9 @@ selected_city = st.sidebar.selectbox("📍 Select Municipal Hub:", available_cit
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## 🎛️ SIMULATION MATRIX")
-climate_anomaly = st.sidebar.toggle("🚨 Force Climate Anomaly Mode", value=False)
+
+# FIXED: Replaced unsupported st.toggle with a fully version-compliant checkbox component
+climate_anomaly = st.sidebar.checkbox("🚨 Force Climate Anomaly Mode", value=False)
 map_style = st.sidebar.selectbox("🎨 Map Topology Canvas:", ["Dark Cyber Canvas", "Light Tech Canvas"])
 
 crop_filter = st.sidebar.multiselect("🌾 Targeted Crop Profiles:", options=['Kharif Rice', 'Cotton', 'Sugarcane', 'Pulses'], default=['Kharif Rice', 'Cotton', 'Sugarcane', 'Pulses'])
@@ -65,8 +68,8 @@ def generate_focused_city_data(state_name, city_name, anomaly_mode):
     crops = ['Kharif Rice', 'Cotton', 'Sugarcane', 'Pulses']
     data = []
     np.random.seed(len(city_name))
-    for i in range(1, 7):
-        block_label = f"Vector Plot Sector-{i:02d}"
+    for i in range(1, 6):
+        block_label = f"Sector-{i:02d} [Field Station]"
         crop = np.random.choice(crops)
         ndvi = round(np.random.uniform(0.38, 0.88), 2)
         ndwi = round(np.random.uniform(0.15, 0.60), 2)
@@ -78,11 +81,11 @@ def generate_focused_city_data(state_name, city_name, anomaly_mode):
         if actual_et > demand_etc: actual_et = demand_etc
         water_deficit = round(demand_etc - actual_et, 1)
         risk_index = int(min(100, max(0, (water_deficit / demand_etc) * 100 + (30 if anomaly_mode else 0))))
-        if ndvi < 0.45: stage = "Vegetative Emergence"
-        elif ndvi < 0.75: stage = "Mid-Season Reproductive"
-        else: stage = "Late Maturation Window"
-        lat_scatter = city_coords['lat'] + np.random.uniform(-0.018, 0.018)
-        lon_scatter = city_coords['lon'] + np.random.uniform(-0.018, 0.018)
+        if ndvi < 0.45: stage = "Vegetative Inception Phase"
+        elif ndvi < 0.75: stage = "Peak Flowering/Reproductive"
+        else: stage = "Maturation/Dry-Down Window"
+        lat_scatter = city_coords['lat'] + np.random.uniform(-0.012, 0.012)
+        lon_scatter = city_coords['lon'] + np.random.uniform(-0.012, 0.012)
         
         if water_deficit > 15.0:
             color_rgb = [239, 68, 68, 220]
@@ -106,22 +109,21 @@ df_raw = generate_focused_city_data(selected_state, selected_city, climate_anoma
 df_matrix = df_raw[df_raw["Crop Class"].isin(crop_filter)]
 
 st.title("🛡️ KrishiTwin OS — Precision Command Console")
-st.markdown(f"📡 Regional Node Pipeline: <span style='color:#10B981; font-weight:bold;'>{selected_state}</span> ➔ <span style='color:#3B82F6; font-weight:bold;'>{selected_city}</span>", unsafe_allow_html=True)
+st.markdown(f"📡 Vector Telemetry Hub: <span style='color:#10B981; font-weight:bold;'>{selected_state}</span> ➔ <span style='color:#3B82F6; font-weight:bold;'>{selected_city}</span>", unsafe_allow_html=True)
 st.write("---")
 
 alert_count = len(df_matrix[df_matrix["Severity"] == "Critical Alert"])
-avg_risk = int(df_matrix["Climate Risk Index (%)"].mean()) if not df_matrix.empty else 0
-max_deficit = df_matrix["Water Deficit (mm)"].max() if not df_matrix.empty else 0
+avg_deficit = round(df_matrix["Water Deficit (mm)"].mean(), 1) if not df_matrix.empty else 0.0
 
 m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-with m_col1: st.markdown(f'<div class="premium-card"><div class="metric-title">📡 Active Target Node</div><div class="metric-value-huge" style="color:#3B82F6; font-size:18px;">{selected_city}</div></div>', unsafe_allow_html=True)
-with m_col2: st.markdown(f'<div class="premium-card"><div class="metric-title">🔥 Mean Regional Risk Index</div><div class="metric-value-huge" style="color:#10B981;">{avg_risk}%</div></div>', unsafe_allow_html=True)
-with m_col3: st.markdown(f'<div class="premium-card"><div class="metric-title">⚠️ Threat Alert Count</div><div class="metric-value-huge" style="color:#EF4444;">{alert_count}</div></div>', unsafe_allow_html=True)
-with m_col4: st.markdown(f'<div class="premium-card"><div class="metric-title">💧 Peak Sector Deficit</div><div class="metric-value-huge" style="color:#22D3EE;">{max_deficit} mm</div></div>', unsafe_allow_html=True)
+with m_col1: st.markdown(f'<div class="premium-card"><div class="metric-title">📡 Selected Domain Unit</div><div class="metric-value-huge" style="color:#3B82F6; font-size:16px;">{selected_city}</div></div>', unsafe_allow_html=True)
+with m_col2: st.markdown(f'<div class="premium-card"><div class="metric-title">💧 Avg Sector Deficit</div><div class="metric-value-huge" style="color:#22D3EE;">{avg_deficit} mm</div></div>', unsafe_allow_html=True)
+with m_col3: st.markdown(f'<div class="premium-card"><div class="metric-title">⚠️ Active Sector Alerts</div><div class="metric-value-huge" style="color:#EF4444;">{alert_count} Alerts</div></div>', unsafe_allow_html=True)
+with m_col4: st.markdown(f'<div class="premium-card"><div class="metric-title">🛰️ Spatial View Status</div><div class="metric-value-huge" style="color:#10B981; font-size:18px;">LOCAL LOCKED</div></div>', unsafe_allow_html=True)
 
 left_workspace, right_workspace = st.columns([2, 1])
 with left_workspace:
-    st.markdown("### 🗺️ Geospatial Vector Array Map")
+    st.markdown("### 🗺️ Granular Focused Geospatial Tracking Layer")
     if not df_matrix.empty:
         target_center = state_city_map[selected_state]["cities"][selected_city]
         view_state = pdk.ViewState(latitude=target_center['lat'], longitude=target_center['lon'], zoom=12.2, pitch=45, bearing=-10)
@@ -130,33 +132,26 @@ with left_workspace:
         map_df['color_vector'] = map_df["fill_color"]
         layer = pdk.Layer("ColumnLayer", data=map_df, get_position="[longitude, latitude]", get_elevation="elevation_metric", elevation_scale=70, radius=150, get_fill_color="color_vector", pickable=True, auto_highlight=True)
         st.pydeck_chart(pdk.Deck(map_style=pdk_style, layers=[layer], initial_view_state=view_state))
+    
+    st.markdown("### 📋 Localized Field Station Ledger")
     st.dataframe(df_matrix.drop(columns=['latitude', 'longitude', 'fill_color']), use_container_width=True, height=200)
 
 with right_workspace:
-    st.markdown("### ⚡ AI Directives & Logistics")
+    st.markdown("### ⚡ Micro-Targeted Action Advisories")
     available_sectors = df_matrix["Command Sector Node"].unique() if not df_matrix.empty else ["None"]
-    selected_sector = st.selectbox("🎯 Target Live Monitoring Vector:", available_sectors)
+    selected_sector = st.selectbox("Select Station Node Field:", available_sectors)
     if selected_sector != "None":
         block_row = df_matrix[df_matrix["Command Sector Node"] == selected_sector].iloc[0]
         deficit = block_row["Water Deficit (mm)"]
-        risk_val = block_row["Climate Risk Index (%)"]
         
-        if "Critical" in block_row["Severity"]:
-            badge_html = '<span class="badge-critical">🛑 EMERGENCY LEVEL Threat</span>'
-            directive_text = f"🚨 **CRITICAL INTERVENTION MANDATE:** Sector **{selected_sector}** shows a massive **{risk_val}%** risk probability. Open primary distributary sluice lines immediately."
-        elif "Warning" in block_row["Severity"]:
-            badge_html = '<span class="badge-warning">⚠️ ELEVATED STRESS RISK</span>'
-            directive_text = f"⚡ **PREVENTATIVE LOGISTICS DEPLOYMENT:** Moisture levels falling inside **{selected_sector}**. Schedule automated gate loops."
-        else:
-            badge_html = '<span class="badge-stable">✅ ZONE STABLE</span>'
-            directive_text = f"🌱 **EQUILIBRIUM MAINTAINED:** Crop metrics for **{selected_sector}** remain stable."
-
-        st.markdown(f'<div class="premium-card"><h4>Plot ID: {selected_sector}</h4><p>🌾 Crop Category: {block_row["Crop Class"]}</p><p>🔥 Climate Threat Index: {risk_val}%</p>{badge_html}</div>', unsafe_allow_html=True)
+        st.markdown(f'##### Hydro-Analysis Eval')
+        st.warning(f"⚠️ ELEVATED MOISTURE MOVEMENT: {deficit}mm")
+        
+        directive_text = f"⚡ **ROTATIONAL GATE CONFIGURATION:** Soil profile is drying down. Route standard gate supply into **{selected_sector}** over the next 48 hours."
         st.info(directive_text)
         
-        # Fixed String Assembly to avoid javascript literal breaking
-        comprehensive_report = "🛡️ KRISHITWIN OS CENTRAL COMMAND LOGISTICS BRIEF\\n" + f"Target Region: {selected_state} - {selected_city}\\nSector Unit: {selected_sector}\\nDeficit Parameter: {deficit} mm\\nConsolidated Risk Matrix: {risk_val}%\\nDirective Order: {directive_text}"
-        st.download_button(label="📥 Export Municipal Advisory Command Brief", data=comprehensive_report, file_name=f"KrishiTwin_Advisory_{selected_sector.replace(' ', '_')}.txt", mime="text/plain")
+        comprehensive_report = f"🛡️ SYSTEM DIRECTIVE LOG\\nNode Unit: {selected_sector}\\nDeficit: {deficit} mm\\nAction Plan: {directive_text}"
+        st.download_button(label="📥 Export Field Station Directive Log", data=comprehensive_report, file_name=f"Directive_{selected_sector.replace(' ', '_')}.txt", mime="text/plain")
 `
           }
         },
